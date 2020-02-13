@@ -4,17 +4,13 @@ GOFMT_FILES?=$$(find . -not -path "./vendor/*" -type f -name '*.go')
 
 default: bin
 
-
-dep:
-	@go mod download
-
 fmt:
 	@gofmt -w $(GOFMT_FILES)
 
 bin:
 	@go install ./...
 
-test: fmtcheck
+test:
 	@go test ./...
 
 protoc:

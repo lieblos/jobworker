@@ -13,7 +13,7 @@ type server struct {
 }
 
 // Create implements contract.JobletServer
-func (s *server) create(ctx context.Context, in *pb.Command) (*pb.Job, error) {
+func (s *server) Create(ctx context.Context, in *pb.Command) (*pb.Job, error) {
 	return &pb.Job{Id: uuid.New().String(), Status: fmt.Sprintf("creating %v %v", in.Name, in.Args)}, nil
 }
 
