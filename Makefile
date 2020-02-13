@@ -1,0 +1,25 @@
+VERSION?="0.0.1"
+GOFMT_FILES?=$$(find . -not -path "./vendor/*" -type f -name '*.go')
+
+
+default: bin
+
+
+dep:
+	@go mod download
+
+fmt:
+	@gofmt -w $(GOFMT_FILES)
+
+bin:
+	@go install ./...
+
+test: fmtcheck
+	@go test ./...
+
+protoc:
+	@protoc -I pkg/proto/ pkg/proto/service.proto --go_out=plugins=grpc:pkg/proto
+
+.NOTPARALLEL:
+
+.PHONY: bin fmt test dep protoc

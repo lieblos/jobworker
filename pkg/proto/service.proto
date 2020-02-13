@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto;
+
+service Joblet {
+  rpc Create (Command) returns (Job) {}
+  rpc Get (JobReq) returns (Job) {}
+  rpc Delete (JobReq) returns (Job) {}
+  rpc Tail (JobReq) returns (stream Log) {}
+}
+
+message Command {
+  string name = 1;
+  repeated string args = 2;
+}
+
+message JobReq {
+  string id = 1;
+}
+
+message Job {
+  string id = 1;
+  string status = 2;
+}
+
+message Log {
+  string line = 1;
+}
