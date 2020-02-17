@@ -18,7 +18,7 @@ type Job struct {
 }
 
 // manage manages the completion status of an exec.Cmd and
-// requests to alter it through the job
+// requests to alter it through the job.
 func (j *Job) manage(cmd *exec.Cmd) {
 	completed := make(chan error)
 
@@ -40,14 +40,14 @@ func (j *Job) manage(cmd *exec.Cmd) {
 	}
 }
 
-// Status accesses status in a thread-safe manner
+// Status accesses status in a thread-safe manner.
 func (j *Job) Status() string {
 	j.rw.RLock()
 	defer j.rw.RUnlock()
 	return j.status
 }
 
-// Completed accesses completed in a thread-safe manner
+// Completed accesses completed in a thread-safe manner.
 func (j *Job) Completed() bool {
 	j.rw.RLock()
 	defer j.rw.RUnlock()

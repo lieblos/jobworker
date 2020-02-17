@@ -11,18 +11,18 @@ import (
 )
 
 const (
-	// NotFound is the error string non existent job is requested
+	// NotFound is the error string non existent job is requested.
 	NotFound = "job not found"
-	// AlreadyCompleted is the error string when a job is concurrently killed or completed
+	// AlreadyCompleted is the error string when a job is concurrently killed or completed.
 	AlreadyCompleted = "job is already exiting"
 )
 
-// Manager is an implementation of Service that uses unix processes
+// Manager is an implementation of Service that uses unix processes.
 type Manager struct {
 	jobs sync.Map
 }
 
-// NewManager initializes a new ProcessService and its global resources
+// NewManager initializes a new ProcessService and its global resources.
 func NewManager() Manager {
 	err := os.MkdirAll(LogsPath, os.ModePerm)
 	if err != nil {
@@ -33,11 +33,11 @@ func NewManager() Manager {
 }
 
 // Create creates a job from the name and args provided, redirects its stdout a file to
-// and starts a goroutine that monitors requests to kill the job and it's completion status
+// and starts a goroutine that monitors requests to kill the job and it's completion status.
 func (m *Manager) Create(name string, args ...string) (*Job, error) {
 	id := uuid.New()
 
-	f, err := os.OpenFile(LogPath(id), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(logPath(id), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (m *Manager) Create(name string, args ...string) (*Job, error) {
 	return j, nil
 }
 
-// Get retrieves a process by uuid
+// Get retrieves a process by uuid.
 func (m *Manager) Get(id uuid.UUID) (*Job, error) {
 	j, ok := m.jobs.Load(id)
 	if !ok {
@@ -75,7 +75,7 @@ func (m *Manager) Get(id uuid.UUID) (*Job, error) {
 	return j.(*Job), nil
 }
 
-// Delete creates a process by uuid, taking care to not kill killed processes
+// Delete creates a process by uuid, taking care to not kill killed processes.
 func (m *Manager) Delete(id uuid.UUID) (*Job, error) {
 	tmp, ok := m.jobs.Load(id)
 	if !ok {
@@ -110,7 +110,7 @@ func (m *Manager) Delete(id uuid.UUID) (*Job, error) {
 // Logs retrieves logs for the job corresponding to the uuid passed. Logs is intentionally
 // not gated by validation of the uuid.UUID passed in so that logs of deleted jobs can be retrieved.
 func (m *Manager) Logs(id uuid.UUID) (chan (string), error) {
-	f, err := os.Open(LogPath(id))
+	f, err := os.Open(logPath(id))
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (m *Manager) Logs(id uuid.UUID) (chan (string), error) {
 	c := make(chan string)
 	go func() {
 		defer f.Close()
-		ReadToChannel(f, c)
+		readToChannel(f, c)
 	}()
 
 	return c, nil

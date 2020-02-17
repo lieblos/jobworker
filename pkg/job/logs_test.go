@@ -9,7 +9,7 @@ func TestReadToChannel(t *testing.T) {
 	r := strings.NewReader("hello, world\nwhats up")
 	c := make(chan string)
 
-	go ReadToChannel(r, c)
+	go readToChannel(r, c)
 
 	expected := "hello, world"
 	if l := <-c; l != expected {

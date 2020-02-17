@@ -8,14 +8,13 @@ import (
 )
 
 const (
-	// LogsPath is the base path where the logs are
+	// LogsPath is the base path where the logs are.
 	LogsPath = "/tmp/log/jobworker/"
-	// LogSuffix is suffix for log files
+	// LogSuffix is suffix for log files.
 	LogSuffix = ".log"
 )
 
-// ReadToChannel reads the logs for a job to a channel
-func ReadToChannel(r io.Reader, c chan string) {
+func readToChannel(r io.Reader, c chan string) {
 	buf := bufio.NewReader(r)
 
 	for {
@@ -38,8 +37,6 @@ func ReadToChannel(r io.Reader, c chan string) {
 	}
 }
 
-// LogPath is the log path
-// TODO use os.Path for windows and logs should go to /var/log or user home
-func LogPath(id uuid.UUID) string {
+func logPath(id uuid.UUID) string {
 	return LogsPath + id.String() + LogSuffix
 }
