@@ -64,7 +64,7 @@ func main() {
 			{
 				Name:   "logs",
 				Usage:  "retrieves the logs for a job",
-				Action: logs(ctx, cl),
+				Action: logs(context.Background(), cl),
 			},
 		},
 	}

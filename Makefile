@@ -18,4 +18,4 @@ protoc:
 
 .NOTPARALLEL:
 
-.PHONY: bin fmt test dep protoc
+.PHONY: bin fmt test protoc
