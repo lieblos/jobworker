@@ -34,12 +34,12 @@ func TestManagerSuccess(t *testing.T) {
 		t.Errorf("<-logs = %v; want %v", l, expected)
 	}
 
-	j, err = m.Delete(j.ID)
+	_, err = m.Delete(j.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	j, err = m.Get(j.ID)
+	_, err = m.Get(j.ID)
 	if err == nil {
 		t.Errorf("m.Get(j.ID).err = %v; want %v", nil, NotFound)
 	}

@@ -18,38 +18,23 @@ func TestManageKilledJob(t *testing.T) {
 	}
 
 	j := &Job{
-		ID:        uuid.New(),
-		Done:      make(chan chan error),
-		completed: false,
-		status:    cmd.ProcessState.String(),
+		ID:     uuid.New(),
+		Status: make(chan string),
+		Delete: make(chan chan string),
 	}
 
 	go j.manage(cmd)
 
 	// When we kill it
-	c := make(chan error)
+	c := make(chan string)
 
-	j.Done <- c
+	j.Delete <- c
 
 	// Then it should stop without error and indicate it was killed shortly after.
-	err = <-c
-	if err != nil {
-		t.Error(err)
+	expected := "signal: killed"
+	if s := <-c; s != expected {
+		t.Errorf("s = %v; want %v", s, expected)
 	}
-
-	for i := 0; i < 10; i++ {
-		if j.Completed() {
-			expected := "signal: killed"
-			if j.Status() != expected {
-				t.Errorf("j.Status() = %v; want %v", j.Status(), expected)
-			}
-			return
-		}
-
-		// Yes, time dependent tests are bad, but if this takes more than 2.5 seconds we have a problem.
-		time.Sleep(250 * time.Millisecond)
-	}
-	t.FailNow()
 }
 
 func TestManageCompletedJob(t *testing.T) {
@@ -62,10 +47,9 @@ func TestManageCompletedJob(t *testing.T) {
 	}
 
 	j := &Job{
-		ID:        uuid.New(),
-		Done:      make(chan chan error),
-		completed: false,
-		status:    cmd.ProcessState.String(),
+		ID:     uuid.New(),
+		Status: make(chan string),
+		Delete: make(chan chan string),
 	}
 
 	go j.manage(cmd)
@@ -74,15 +58,10 @@ func TestManageCompletedJob(t *testing.T) {
 	time.Sleep(250 * time.Millisecond)
 
 	// Then it should indicate it is completed and exited successfully
-	if !j.Completed() {
-		t.Errorf("j.Completed() = %v; want %v", j.Status(), true)
-	}
-
 	expected := "exit status 0"
-	if j.Status() != expected {
-		t.Errorf("j.Status() = %v; want %v", j.Status(), expected)
+	if s := <-j.Status; s != expected {
+		t.Errorf("s = %v; want %v", s, expected)
 	}
-	return
 }
 
 func TestManageErroredJob(t *testing.T) {
@@ -95,10 +74,9 @@ func TestManageErroredJob(t *testing.T) {
 	}
 
 	j := &Job{
-		ID:        uuid.New(),
-		Done:      make(chan chan error),
-		completed: false,
-		status:    cmd.ProcessState.String(),
+		ID:     uuid.New(),
+		Status: make(chan string),
+		Delete: make(chan chan string),
 	}
 
 	go j.manage(cmd)
@@ -107,13 +85,9 @@ func TestManageErroredJob(t *testing.T) {
 	time.Sleep(250 * time.Millisecond)
 
 	// Then it should indicate it is completed and exited horribly
-	if !j.Completed() {
-		t.Errorf("j.Completed() = %v; want %v", j.Status(), true)
-	}
-
 	expected := "exit status 1"
-	if j.Status() != expected {
-		t.Errorf("j.Status() = %v; want %v", j.Status(), expected)
+	if s := <-j.Status; s != expected {
+		t.Errorf("s = %v; want %v", s, expected)
 	}
 	return
 }

@@ -52,10 +52,9 @@ func (m *Manager) Create(name string, args ...string) (*Job, error) {
 	}
 
 	j := &Job{
-		ID:        id,
-		Done:      make(chan chan error),
-		completed: false,
-		status:    cmd.ProcessState.String(),
+		ID:     id,
+		Status: make(chan string),
+		Delete: make(chan chan string),
 	}
 
 	go j.manage(cmd)
@@ -76,35 +75,18 @@ func (m *Manager) Get(id uuid.UUID) (*Job, error) {
 }
 
 // Delete creates a process by uuid, taking care to not kill killed processes.
-func (m *Manager) Delete(id uuid.UUID) (*Job, error) {
-	tmp, ok := m.jobs.Load(id)
+func (m *Manager) Delete(id uuid.UUID) (string, error) {
+	j, ok := m.jobs.Load(id)
 	if !ok {
-		return nil, errors.New(NotFound)
+		return "", errors.New(NotFound)
 	}
-
-	j := tmp.(*Job)
 
 	m.jobs.Delete(id)
 
-	if !j.Completed() {
-		c := make(chan error)
+	c := make(chan string)
+	j.(*Job).Delete <- c
 
-		// Only try to send - there's a possibility the process stopped out from under us right here, either on its own
-		// or another request entered this section at the same time. To make sure only one request tries this, we could
-		// just embed a sync.Once in the Job, but that only handles concurrent deletes, not concurrent delete and completion.
-		select {
-		case j.Done <- c:
-			// Since manage() handles j.Done synchronously in one arm of a select, once
-			// we enter here, c will be populated - by an error if Kill goes poorly or by nil.
-			if err := <-c; err != nil {
-				return j, err
-			}
-		default:
-			return j, errors.New(AlreadyCompleted)
-		}
-	}
-
-	return j, nil
+	return <-c, nil
 }
 
 // Logs retrieves logs for the job corresponding to the uuid passed. Logs is intentionally

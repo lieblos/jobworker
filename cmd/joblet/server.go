@@ -13,7 +13,7 @@ import (
 type JobService interface {
 	Create(name string, args ...string) (*job.Job, error)
 	Get(id uuid.UUID) (*job.Job, error)
-	Delete(id uuid.UUID) (*job.Job, error)
+	Delete(id uuid.UUID) (string, error)
 	Logs(id uuid.UUID) (chan (string), error)
 }
 
@@ -29,7 +29,7 @@ func (s *server) Create(ctx context.Context, in *pb.Command) (*pb.Job, error) {
 		return nil, err
 	}
 
-	return &pb.Job{Id: j.ID.String(), Status: j.Status()}, nil
+	return &pb.Job{Id: j.ID.String(), Status: <-j.Status}, nil
 }
 
 // Get implements proto.JobletServer
@@ -44,7 +44,7 @@ func (s *server) Get(ctx context.Context, in *pb.JobReq) (*pb.Job, error) {
 		return nil, err
 	}
 
-	return &pb.Job{Id: j.ID.String(), Status: j.Status()}, nil
+	return &pb.Job{Id: j.ID.String(), Status: <-j.Status}, nil
 }
 
 // Delete implements proto.JobletServer
@@ -54,12 +54,12 @@ func (s *server) Delete(ctx context.Context, in *pb.JobReq) (*pb.Job, error) {
 		return nil, err
 	}
 
-	j, err := s.jobService.Delete(id)
+	stat, err := s.jobService.Delete(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.Job{Id: j.ID.String(), Status: j.Status()}, nil
+	return &pb.Job{Id: id.String(), Status: stat}, nil
 }
 
 // Tail implements proto.JobletServer
